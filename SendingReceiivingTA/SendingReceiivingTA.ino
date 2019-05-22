@@ -4,7 +4,7 @@
 
 RF24 radio(7, 8);
 
-const int nodeId=1;
+const int nodeId=4;
 const int chId=1;
 int ch_status=0;
 const int rxAddr = 5000;
@@ -69,19 +69,17 @@ void tapListening() {
   {
     char rtext[25];
     radio.read(&rtext, sizeof(rtext));
-       if(rtext[0] == "R"){
-        xSecond = 0;
-        xMinute = 0;
-        xHour = 0;
-        xMili = 0;
-        flag_reset_time = 1;
-        if(rtext[2]==1)
-        ChAddr = rxAddr1 ;
+       if(rtext[0] == 'R'){
+          xSecond = 0;
+          xMinute = 0;
+          xHour = 0;
+          xMili = 0;
+          flag_reset_time = 1;
+          if(rtext[2]==1)
+          ChAddr = rxAddr1 ;
       }
       
     Serial.println(rtext);
-    Serial.println(ChAddr);
-    Serial.println(flag_reset_time);
   }
 }
 
@@ -118,22 +116,14 @@ void transmit(String Message)
   radio.openReadingPipe(0, rxAddr);
   radio.startListening();
      Serial.println(pesan[0]);
-   if(pesan[2] == "1"){
+   if(pesan[0] == 'R'){
         xSecond = 0;
         xMinute = 0;
         xHour = 0;
         xMili = 0;
         flag_reset_time = 1;
-        //ChAddr = sendAddr ;
-        ch_status =1;
-        Serial.println("RESET TIME");
-        
+        ch_status =1;     
       }
-      else{
-        
-        Serial.println("RESET TIME FAILED");
-        }
-
 
 }
 
@@ -164,12 +154,7 @@ void transmit(int sendAddr, String Message)
         xMili = 0;
         flag_reset_time = 1;
         ChAddr = sendAddr ;
-        ch_status =1;
-        
-        
-      }else if(pesan[0] == "S"){
-        ChAddr = sendAddr ;
-        ch_status =0;
+        ch_status =1; 
       }
    
 }
@@ -200,16 +185,6 @@ void loop()
           Serial.println(ResetTime) ;
         }
          
-      else if (((xSecond % 3) == 0) && (xMili ==1 )) {
-
-      char text[25];
-      String myMessage = String(xHour, DEC) + ":" + String(xMinute, DEC) + ":" + String(xSecond, DEC);
-      
-       myMessage.concat("#Bangau#" );
-       transmit(myMessage);
-       myMessage.concat("Sent:" );
-       Serial.println(myMessage);
-    }       
  
   
    
