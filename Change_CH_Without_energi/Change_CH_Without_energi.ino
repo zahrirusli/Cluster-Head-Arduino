@@ -102,65 +102,54 @@ void tapListening(int addres) {
     radio.read(&rtext, sizeof(rtext));
     if(rtext[0]=='S'){
          ch_status = 0;
-         CH_ID = 0;
-     }else if(rtext[0]=='B'){
-      
-          if(rtext[2]=='1'){
-            energi1 = rtext+3;   
+         CH_ID ++;
+         if(CH_ID >4){
+            CH_ID=1;
           }
-          else if(rtext[2]=='2'){
-            energi2 = rtext+3;   
-          }
-          else if(rtext[2]=='3'){
-            energi3 = rtext+3;   
-          }
-          else if(rtext[2]=='4'){
-            energi4 = rtext+3;   
-          }
-          delay(100);
-          if (energi1>energi2 && energi1>energi3 && energi1>energi4){
-                CH_ID = 1;
-                ChAddr= rxAddr1;
-                if(nodeId==1){
-                  ch_status=1;
-                }else{
-                  ch_status=0;
-                 }
-            }else if (energi2>energi1 && energi2>energi3 && energi2>energi4){
-                CH_ID = 2;
-                ChAddr= rxAddr2;
-                if(nodeId==2){
-                  ch_status=1;
-                }else{
-                  ch_status=0;
-                 }
-            }else if (energi2>energi1 && energi2>energi3 && energi2>energi4){
-                CH_ID = 3;
-                ChAddr= rxAddr3;
-                if(nodeId==3){
-                  ch_status=1;
-                }else{
-                  ch_status=0;
-                 }
-            }else if (energi2>energi1 && energi2>energi3 && energi2>energi4){
-                CH_ID = 4;
-                ChAddr= rxAddr4;
-                if(nodeId==4){
-                  ch_status=1;
-                }else{
-                  ch_status=0;
-                 }
-            }
 
-            delay(5);
-      }else if(rtext[0]=='I'){
+          if (CH_ID==1){
+              ChAddr= rxAddr1;
+               if(nodeId==1){
+                  ch_status=1;
+               }else{
+                 ch_status=0;
+               }
+          }
+          else if (CH_ID==2){
+              ChAddr= rxAddr2;
+               if(nodeId==2){
+                  ch_status=1;
+               }else{
+                 ch_status=0;
+               }
+          }
+          else if (CH_ID==3){
+              ChAddr= rxAddr3;
+               if(nodeId==3){
+                  ch_status=1;
+               }else{
+                 ch_status=0;
+               }
+          }
+          else if (CH_ID==4){
+              ChAddr= rxAddr4;
+               if(nodeId==4){
+                  ch_status=1;
+               }else{
+                 ch_status=0;
+               }
+          }
+          Serial.println(CH_ID);
+          Serial.println(ChAddr);
+     }
+      else if(rtext[0]=='I'){
           String msg = "CH ADALAH NODE :";
           msg.concat(rtext[2]);
           Serial.println(msg);
         }
-      
-    Serial.println(rtext);
-  }
+          Serial.println(rtext);
+      }
+    
 }
 
 void transmit(String Message)
@@ -217,8 +206,11 @@ void transmit(int sendAddr, String Message)
   radio.startListening();
      if (pesan[0] == 'S') {
           ch_status = 0;
-          CH_ID = 0;                 
+          CH_ID ++;
+         if(CH_ID >4){
+            CH_ID=1;                 
         }
+      }
    
 }
 
@@ -244,30 +236,30 @@ void loop()
             }  
     }
     
-  else if ((flag_reset_time == 1)&& (CH_ID==0)){
-      tapListening(bcAddr);
-      radio.setPALevel(RF24_PA_LOW);
-      if (((xMinute % 3)==0) && (xSecond == 10) && (xMili==1) )
-          {
-          char text[25];
-          String bcEnergy = "B#";
-          bcEnergy.concat(nodeId);
-          bcEnergy.concat(energi1);
-          transmit(bcAddr,bcEnergy);
-          Serial.println(bcEnergy) ;
-          }
-    }
+//  else if ((flag_reset_time == 1)&& (CH_ID==0)){
+//      tapListening(bcAddr);
+//      radio.setPALevel(RF24_PA_LOW);
+//      if (((xMinute % 3)==0) && (xSecond == 10) && (xMili==1) )
+//          {
+//          char text[25];
+//          String bcEnergy = "B#";
+//          bcEnergy.concat(nodeId);
+//          bcEnergy.concat(energi1);
+//          transmit(bcAddr,bcEnergy);
+//          Serial.println(bcEnergy) ;
+//          }
+//    }
   else if ((ch_status==1)&&(flag_reset_time ==1) && (CH_ID!=0)){
       tapListening(ChAddr);
       radio.setPALevel(RF24_PA_HIGH);
-          if (((xMinute % 3)==0) && (xSecond == 1) && (xMili==1) )
+          if (((xMinute % 3)==1) && (xSecond == 1) && (xMili==1) )
           {
               char text[25];
               String stopCH = "S#";
               stopCH.concat(nodeId);
               transmit(rxAddr,stopCH);
               Serial.println(stopCH) ;
-          }else if (((xMinute % 1)==0) && (xSecond == 1) && (xMili==1) )
+          }else if ((xSecond == 59) && (xMili==1) )
           {
               char text[25];
               String sendTosink = "I#";
