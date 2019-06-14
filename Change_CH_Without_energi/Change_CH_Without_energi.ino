@@ -4,7 +4,7 @@
 
 RF24 radio(7, 8);
 
-const int nodeId=2;
+const int nodeId=3;
 int CH_ID=0;
 int ch_status=0;
 const int rxAddr = 5000;
@@ -147,7 +147,11 @@ void tapListening(int addres) {
           msg.concat(rtext[2]);
           Serial.println(msg);
         }
-          Serial.println(rtext);
+      else if(rtext[0]=='D'){
+           transmit(sinkAddr,rtext);
+           Serial.println(rtext);
+        }
+     
       }
     
 }
