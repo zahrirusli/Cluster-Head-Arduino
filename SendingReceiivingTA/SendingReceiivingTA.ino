@@ -231,7 +231,7 @@ void loop()
   currentSecond = xSecond;
   countTime();
 
-  
+  //node saat waktu akan di restart
   if(flag_reset_time==0) {
       tapListening();
         if((xSecond == 15) && (xMili==1)&&(nodeId==1))
@@ -243,7 +243,8 @@ void loop()
               Serial.println(ResetTime) ;
             }  
     }
-    
+
+    //node saat stop sebelum pemilihan cluster head
   else if ((flag_reset_time == 1)&& (CH_ID==0)){
       tapListening(bcAddr);
       radio.setPALevel(RF24_PA_LOW);
@@ -257,9 +258,11 @@ void loop()
           Serial.println(bcEnergy) ;
           }
     }
+    // node saat menjadi cluster head
   else if ((ch_status==1)&&(flag_reset_time ==1) && (CH_ID!=0)){
       tapListening(ChAddr);
       radio.setPALevel(RF24_PA_HIGH);
+          //pesan untuk berhenti menjadi cluster head
           if (((xMinute % 3)==0) && (xSecond == 1) && (xMili==1) )
           {
               char text[25];
@@ -267,7 +270,9 @@ void loop()
               stopCH.concat(nodeId);
               transmit(rxAddr,stopCH);
               Serial.println(stopCH) ;
-          }else if (((xMinute % 1)==0) && (xSecond == 1) && (xMili==1) )
+          }
+          //pesan kepada sink kalau dia cluster head
+          else if (((xMinute % 1)==0) && (xSecond == 1) && (xMili==1) )
           {
               char text[25];
               String sendTosink = "I#";
@@ -277,6 +282,7 @@ void loop()
           }
           
     }
+    // node biasa saat terdpat cluster head
   else if ((ch_status==0)&&(flag_reset_time ==1)&& (CH_ID!=0)){
       tapListening(rxAddr);
       radio.setPALevel(RF24_PA_LOW);
@@ -289,7 +295,9 @@ void loop()
               Serial.println(sendtoCH) ;
           }
       
-    }else if (sinkStatus == 1){
+    }
+    //coordinator
+  else if (sinkStatus == 1){
         tapListening(sinkAddr);
       }
  
