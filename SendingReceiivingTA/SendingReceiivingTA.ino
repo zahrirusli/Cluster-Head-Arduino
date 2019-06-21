@@ -1,6 +1,11 @@
 #include <SPI.h>
 #include <nRF24L01.h>
 #include <RF24.h>
+#include <Wire.h>
+#include <Adafruit_INA219.h> // You will need to download this library
+
+Adafruit_INA219 sensor219; // Declare and instance of INA219
+
 
 RF24 radio(7, 8);
 
@@ -20,7 +25,9 @@ int energi3 = 50;
 int energi4 = 90;
 int ChAddr = 0;
 int sinkStatus = 0;
-
+float busVoltage = 0;
+float current = 0; // Measure in milli amps
+float power = 0;
 
 
 int a = 0, xMili = 0, xSecond = 0, xMinute = 0, xHour = 0, currentSecond = 0, currentMilis=0;
@@ -35,15 +42,39 @@ void setup()
 
   while (!Serial);
   Serial.begin(9600);
-
-
+  
+  sensor219.begin();
   radio.begin();
   radio.openReadingPipe(0, rxAddr);
   radio.startListening();
 
 }
 
+void getPower(){
+  busVoltage = sensor219.getBusVoltage_V();
+  current = sensor219.getCurrent_mA();
+  power = busVoltage * current; // Calculate the Power
+  
+  
+  Serial.print("Bus Voltage:   "); 
+  Serial.print(busVoltage); 
+  Serial.println(" V");  
+  
+  Serial.print("Current:       "); 
+  Serial.print(current); 
+  Serial.println(" mA");
+  
+  Serial.print("Power:         "); 
+  Serial.print(power); 
+  Serial.println(" W");  
+  
+  Serial.println("");  
 
+  delay(2000);
+
+  
+}
+  
 void countTime() {
   ++xMili;
   if (xMili == 999) {
@@ -103,7 +134,8 @@ void tapListening(int addres) {
     if(rtext[0]=='S'){
          ch_status = 0;
          CH_ID = 0;
-     }else if(rtext[0]=='B'){
+     }
+     else if(rtext[0]=='B'){
       
           if(rtext[2]=='1'){
             energi1 = rtext+3;   
@@ -118,46 +150,70 @@ void tapListening(int addres) {
             energi4 = rtext+3;   
           }
           delay(100);
-          if (energi1>energi2 && energi1>energi3 && energi1>energi4){
+          if (energi1<energi2 && energi1<energi3 && energi1<energi4){
                 CH_ID = 1;
                 ChAddr= rxAddr1;
                 if(nodeId==1){
                   ch_status=1;
+                   char text[25];
+                   String sendTosink = "I#";
+                   sendTosink.concat(nodeId);
+                   transmit(sinkAddr,sendTosink);
                 }else{
                   ch_status=0;
                  }
-            }else if (energi2>energi1 && energi2>energi3 && energi2>energi4){
+            }else if (energi2<energi1 && energi2<energi3 && energi2<energi4){
                 CH_ID = 2;
                 ChAddr= rxAddr2;
                 if(nodeId==2){
                   ch_status=1;
+                      char text[25];
+                      String sendTosink = "I#";
+                      sendTosink.concat(nodeId);
+                      transmit(sinkAddr,sendTosink);
+               
                 }else{
                   ch_status=0;
                  }
-            }else if (energi2>energi1 && energi2>energi3 && energi2>energi4){
+            }else if (energi3<energi1 && energi3<energi3 && energi3<energi4){
                 CH_ID = 3;
                 ChAddr= rxAddr3;
                 if(nodeId==3){
                   ch_status=1;
+                      char text[25];
+                      String sendTosink = "I#";
+                      sendTosink.concat(nodeId);
+                      transmit(sinkAddr,sendTosink);
+               
                 }else{
                   ch_status=0;
                  }
-            }else if (energi2>energi1 && energi2>energi3 && energi2>energi4){
+            }else if (energi4<energi1 && energi4<energi2 && energi4<energi2){
                 CH_ID = 4;
                 ChAddr= rxAddr4;
                 if(nodeId==4){
                   ch_status=1;
+                       char text[25];
+                       String sendTosink = "I#";
+                       sendTosink.concat(nodeId);
+                       transmit(sinkAddr,sendTosink);
                 }else{
                   ch_status=0;
                  }
             }
 
             delay(5);
-      }else if(rtext[0]=='I'){
+      }
+      else if(rtext[0]=='I'){
           String msg = "CH ADALAH NODE :";
           msg.concat(rtext[2]);
           Serial.println(msg);
+       }
+        else if(rtext[0]=='D'){
+           transmit(sinkAddr,rtext);
+           Serial.println(rtext);
         }
+     
       
     Serial.println(rtext);
   }
@@ -227,7 +283,8 @@ void loop()
 {
 
 
-
+    getPower();
+    power+=power ; 
   currentSecond = xSecond;
   countTime();
 
@@ -253,7 +310,7 @@ void loop()
           char text[25];
           String bcEnergy = "B#";
           bcEnergy.concat(nodeId);
-          bcEnergy.concat(energi1);
+          bcEnergy.concat(power);
           transmit(bcAddr,bcEnergy);
           Serial.println(bcEnergy) ;
           }

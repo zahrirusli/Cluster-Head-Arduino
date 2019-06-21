@@ -4,7 +4,7 @@
 
 RF24 radio(7, 8);
 
-const int nodeID=1;
+const int nodeID=2;
 const int chId=1;
 const int statusCH=0;
 const int rxAddr = 5000;
@@ -133,11 +133,11 @@ void loop()
   currentSecond = xSecond;
   countTime();
 
-  if(coordinator_status = 0){
+  if(coordinator_status == 0){
     tapListening();
   }
   else{
-    tapListening(addres);
+    tapListening(sinkAddr);
     }
 
    
@@ -145,7 +145,7 @@ void loop()
 
       char text[25];
       counter++;
-      String myMessage = "MSG#" 
+      String myMessage = "MSG#" ;
       myMessage.concat(nodeID);
       myMessage.concat("#");
       myMessage.concat(counter);
